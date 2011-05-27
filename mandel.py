@@ -30,10 +30,8 @@ def construct_row(x1, x2, y, step, quality):
     x = x1
     row = []
     while x <= x2:
-        row.append(test_function(x, y, quality))
+        yield test_function(x, y, quality)
         x += step
-
-    return row
 
 def build_set(bounds, screen_bounds, quality):
     """
@@ -41,14 +39,11 @@ def build_set(bounds, screen_bounds, quality):
     """
     x1, x2, y1, y2 = bounds
     xstep, ystep = scale(bounds, screen_bounds)
-    mandel_set = []
     
     y = y1
     while y <= y2:
-        mandel_set.append(construct_row(x1, x2, y, xstep, quality))
+        yield construct_row(x1, x2, y, xstep, quality)
         y += ystep
-
-    return mandel_set
 
 def console_set(mandel_set, quality):
     """
