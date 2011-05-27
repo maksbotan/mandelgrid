@@ -1,4 +1,5 @@
 
+import sys
 
 def scale(bounds, screen_bounds):
     """
@@ -56,8 +57,8 @@ def console_set(mandel_set, quality):
     c = 1.0 / quality #Coefficient for translating iteration into binary gradations
     for row in mandel_set:
         for pixel in row:
-            print {1: "0", 0: "."}[int(round(pixel*c))],
-        print 
+            sys.stdout.write({1: "0", 0: "."}[int(round(pixel*c))])
+        sys.stdout.write("\n")
 
 #Test
 if __name__ == '__main__':
