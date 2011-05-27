@@ -33,12 +33,12 @@ def construct_row(x1, x2, y, step, quality):
         yield test_function(x, y, quality)
         x += step
 
-def build_set(bounds, screen_bounds, quality):
+def build_set(bounds, scale, quality):
     """
     Build the set
     """
     x1, x2, y1, y2 = bounds
-    xstep, ystep = scale(bounds, screen_bounds)
+    xstep, ystep = scale
     
     y = y1
     while y <= y2:
@@ -72,5 +72,6 @@ if __name__ == '__main__':
                         type=int,
                         help="Quality (number of iterations)")
     args = parser.parse_args()
-    s = build_set((-2, 1, -1, 1), (args.width, args.height), args.quality)
+    scales = scale((-2, 1, -1, 1), (args.width, args.height))
+    s = build_set((-2, 1, -1, 1), scales, args.quality)
     console_set(s, args.quality)

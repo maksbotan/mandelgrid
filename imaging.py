@@ -61,7 +61,8 @@ if __name__ == '__main__':
                         help="Output file")
     args = parser.parse_args()
     
-    s = mandel.build_set((-2, 1, -1, 1), (args.width, args.height), args.quality)
+    scales = mandel.scale((-2, 1, -1, 1), (args.width, args.height))
+    s = mandel.build_set((-2, 1, -1, 1), scales, args.quality)
     
     im = Image.new("RGB", (args.width, args.height))
     fill_image(im, s, args.quality)
