@@ -38,7 +38,7 @@ class AbstractWorker():
                 ydelta = self.bounds[3] - self.y
             else:
                 ydelta = 32 * self.ystep
-            block = (self.x, self.x + xdelta, self.y, self.y + ydelta)
+            block = (self.x, self.x + xdelta + self.xstep, self.y, self.y + ydelta + self.ystep)
             self.x += xdelta
             yield block
 
