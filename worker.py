@@ -7,10 +7,11 @@ class AbstractWorker():
     Abstract class for implementing Mandelbrot workers
     """
 
-    def __init__(self, bounds, screen_bounds, quality):
+    def __init__(self, bounds, screen_bounds, quality, shift=0):
         self.bounds = bounds
         self.screen_bounds = screen_bounds
         self.quality = quality
+        self.shift = shift
 
         self.x = self.bounds[0]
         self.y = self.bounds[2]
@@ -48,7 +49,7 @@ class AbstractWorker():
             t_bounds = int((block[1] - block[0]) / self.xstep), int((block[3] - block[2]) / self.ystep)
             t_box = int((block[0] - self.bounds[0])/ self.xstep), int((block[2] - self.bounds[2]) / self.ystep)
             t_im = Image.new("RGB", t_bounds)
-            imaging.fill_image(t_im, mandel_set, self.quality)
+            imaging.fill_image(t_im, mandel_set, self.quality, self.shift)
             im.paste(t_im, t_box)
 
         return im
@@ -63,8 +64,8 @@ class LocalIPCWorker(AbstractWorker):
     This worker uses multiprocessing for parallelizing generation
     """
 
-    def __init__(self, bounds, screen_bounds, quality, n_threads):
-        AbstractWorker.__init__(self, bounds, screen_bounds, quality)
+    def __init__(self, bounds, screen_bounds, quality, n_threads, shift=0):
+        AbstractWorker.__init__(self, bounds, screen_bounds, quality, shift)
         self.n_threads = n_threads
 
     @staticmethod

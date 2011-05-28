@@ -3,12 +3,20 @@ from PIL import Image
 
 import mandel
 
-def colorize(iterations, quality, colordepth=8):
+def shift(color, field, amount):
+    full_mask = 2**field - 1
+    right_mask = 2**amount - 1
+    left_mask = full_mask - right_mask
+    left = (color & left_mask)
+    right = color & right_mask
+    return (right << (field - amount)) + (left >> amount)
+
+def colorize(iterations, quality, colordepth=8, color_shift=0):
     """
     Convert iteration number to (R, G, B) according to quality and target color
     depth as bits per color in pixel
     """
-    iterations = quality - iterations
+    iterations = shift(quality - iterations, colordepth*3, color_shift)
     color_range = 2**(colordepth * 3) #Number of colors
     coefficient = (color_range - 1) / float(quality)
     color = int(round(iterations * coefficient))
@@ -28,7 +36,7 @@ def grayscalize(iterations, quality, colordepth=8):
     color = int(round(iterations * coefficient))
     return color
 
-def fill_image(image, mandel_set, quality, grayscale=False):
+def fill_image(image, mandel_set, quality, shift=0, grayscale=False):
     """
     Fill PIL.Image image with colors determined by mandel_set and quality
     """
@@ -37,7 +45,7 @@ def fill_image(image, mandel_set, quality, grayscale=False):
     for y, row in enumerate(mandel_set):
         for x, pixel in enumerate(row):
             try:
-                pix[x, y] = colorize_f(pixel, quality)
+                pix[x, y] = colorize_f(pixel, quality, color_shift=shift)
             except IndexError:
                 pass
 

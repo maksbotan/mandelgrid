@@ -22,12 +22,17 @@ parser.add_argument("-n", "--threads",
                     default=3,
                     type=int,
                     help="Number of threads (processes) to use")
+parser.add_argument("-s", "--shift",
+                    default=0,
+                    type=int,
+                    help="Color shift coefficient")
 args = parser.parse_args()
 
 w = worker.LocalIPCWorker(args.box,
                         args.resolution,
                         args.quality,
-                        args.threads)
+                        args.threads,
+                        args.shift)
 w.run()
 im = w.construct_image()
 with open(args.output, "w") as fo:
