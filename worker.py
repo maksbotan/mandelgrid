@@ -100,6 +100,7 @@ class NetworkWorker(AbstractWorker):
         AbstractWorker.__init__(self, bounds, screen_bounds, quality, shift)
 
         self.master_socket = socket.socket()
+        self.master_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.master_socket.settimeout(5.0)
         self.master_socket.bind((socket.gethostbyname(address), port))
         self.master_socket.listen(1)
@@ -156,4 +157,5 @@ class NetworkWorker(AbstractWorker):
         for s in self.sockets:
             s.shutdown(socket.SHUT_RDWR)
             s.close()
+        self.master_socket.shutdown(socket.SHUT_RDWR)
         self.master_socket.close()
