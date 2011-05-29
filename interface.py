@@ -1,81 +1,61 @@
 
 import struct
-from socket import gethostname
+import zlib
+import copy
+import cPickle as pickle
 
-"""
-Binary message structures:
-"Announce" packets:
-struct announce {
-    string hostname;
-}
+MSG_HEADER = "MANDELBROT"
+STR_HEADER = "BI"
+HDR_SIZE = len(MSG_HEADER) + struct.calcsize("BI")
 
-struct announce_resp {
-    char completeness;
-}
+MSGT_ANNOUNCE = 1
+MSGT_ANNOUNCE_RESP = 2
+MSGT_REQUEST = 3
+MSGT_RESPONSE = 4
 
-struct request {
-    double x1, x2;
-    double y1, y2;
-    unsigned long quality;
-    double xstep, ystep;
-}
+class Message():
 
-struct response {
-    unsinged long long len;
-    string res; /* actually a two dimensional array of ulonglongs
-}
-"""
+    __reserved = ("type", "content")
 
-HDR_ANNOUNCE="MAN_ANNOUNCE"
-HDR_ANNOUNCE_RESP = "MAN_ANNOUNCE_RESP"
-HDR_REQUEST = "MAN_REQUEST"
-HDR_RESPONSE = "MAN_RESPONSE"
-PK_REQUEST = r"ddddLdd"
-PK_RESPONSE = r"Qs"
+    def __init__(self, type, content={}, **kwargs):
+        self.content = copy.copy(content)
+        self.content.update(kwargs)
+        self.type = type
 
-class ProtocolError(Exception):
-    pass
+    def send(self, socket):
+        """
+        Pack message and send to socket
+        """
 
-def build_announce():
-    hostname = gethostname()
-    return HDR_ANNOUNCE + hostname
+        packed_content = zlib.compress(pickle.dumps(self.content))
+        content_length = len(packed_content)
+        header = MSG_HEADER + struct.pack(STR_HEADER, self.type, content_length)
+        message = header + packed_content
 
-def load_announce(buf):
-    if not buf.startswith(HDR_ANNOUNCE):
-        raise ProtocolError
-    return buf[len(HDR_ANNOUNCE):]
+        socket.send(message)
 
-def build_announce_resp(completeness):
-    return HDR_ANNOUNCE_RESP + struct.pack("b", completeness)
+    @staticmethod
+    def load(socket):
+        """
+        Recieve message from socket and unpack it
+        """
 
-def load_announce_resp(buf):
-    print buf
-    if not buf.startswith(HDR_ANNOUNCE_RESP):
-        raise ProtocolError
-    return struct.unpack("b", buf[len(HDR_ANNOUNCE_RESP):])
+        header = socket.recv(HDR_SIZE)
+        if header.startswith(MSG_HEADER):
+            header = header[len(MSG_HEADER):]
+        else:
+            raise ValueError("Corrupted message (missing header)")
+        type, length = struct.unpack(STR_HEADER, header)
+        packed_content = socket.recv(length)
+        content = pickle.loads(zlib.decompress(packed_content))
 
-def build_request(x1, x2, y1, y2, quality, xstep, ystep):
-    return HDR_REQUEST + struct.pack(PK_REQUEST, x1, x2, y1, y2, quality, xstep, ystep)
+        return Message(type, content)
 
-def load_request(buf):
-    if not buf.startswith(HDR_REQUEST):
-        raise ProtocolError
-    return dict(zip(
-        ("x1", "x2", "y1", "y2", "quality", "xstep", "ystep"),
-        struct.unpack(PK_REQUEST, buf[len(HDR_REQUEST):])))
+    def __getattr__(self, attr):
+        return self.content[attr]
 
-def build_response(result):
-    res = []
-    for i in result:
-        res += i
-    return HDR_RESPONSE + struct.pack("Q"*len(res), *res)
-
-def load_response(buf, xres, yres):
-    if not buf.startswith(HDR_RESPONSE):
-        raise ProtocolError
-    l = list(struct.unpack("Q"*(xres*yres), buf[len(HDR_RESPONSE):]))
-    res = []
-    for i in xrange(yres):
-        res.append(l[:xres])
-        del l[:xres]
-    return res
+    def __setattr__(self, attr, value):
+        if attr in self.__dict__ or attr in Message.__dict__ or attr in Message.__reserved:
+            self.__dict__[attr] = value
+            return
+        self.content[attr] = value
