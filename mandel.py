@@ -23,6 +23,8 @@ def test_function(x0, y0, quality):
     
     return iteration
 
+from c_mandel import test_function
+
 def construct_row(x1, x2, y, step, quality):
     """
     Builds one row of Mandelbrot set

@@ -1,3 +1,9 @@
 *.swp
 *.pyc
 *.png
+*.o
+*.so
+*_wrap.c
+c_mandel.py
+c_mandel_check
+build/*
