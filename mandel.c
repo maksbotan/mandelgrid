@@ -1,12 +1,13 @@
 
 #include <stdio.h>
+#include <math.h>
 
+/*
 #include <gmp.h>
 #include <mpfr.h>
 
 #define PREC 200
 
-/*
 long test_function(double x0, double y0, long quality){
     mpfr_t x, y;
     mpfr_t t_x, t_y, t2_x;
@@ -60,11 +61,25 @@ long test_function(double x0, double y0, long quality){
 
 long test_function(double x0, double y0, long quality){
     double x, new_x, y;
+    double q;
     long iteration;
 
     x = x0;
     y = y0;
     iteration = 0;
+
+    q = pow(x-0.25, 2)+pow(y,2);
+    if (q*(q+(x-0.25))<0.25*pow(y,2)) {
+        return quality;
+    }
+
+    if (pow(x+1, 2)+pow(y,2) < 1.0/16){
+        return quality;
+    }
+
+    if (pow(x+1+5.0/16, 2) + pow(y, 2) < 1.0/256) {
+        return quality;
+    }
 
     while ((x*x + y*y <= 4) && (iteration < quality)) {
         new_x = x*x - y*y + x0;
