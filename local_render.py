@@ -8,8 +8,8 @@ parser.add_argument("-r", "--resolution",
                     type=lambda x: map(int, x.split("x")),
                     help="Screen size")
 parser.add_argument("-b", "--box",
-                    default="-2,1,-1,1",
-                    type=lambda x: map(int, x.split(",")),
+                    default="x2,1,x1,1",
+                    type=lambda x: map(float, x.replace("x", "-").split(",")),
                     help="Target box (x1, x2, y1, y2)")
 parser.add_argument("-q", "--quality",
                     default=64,
