@@ -1,0 +1,5 @@
+
+#pragma once
+
+#cmakedefine HAVE_GD
+#cmakedefine HAVE_CLOCK
