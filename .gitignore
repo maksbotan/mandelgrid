@@ -4,6 +4,7 @@
 *.o
 *.so
 *_wrap.c
+mandel
 c_mandel.py
 c_mandel_check
 build/*
