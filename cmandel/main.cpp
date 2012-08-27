@@ -8,6 +8,9 @@
 #include <cstdio>
 #include <cstring>
 #include <iostream>
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 #include "mandel.h"
 #include "gdinterface.h"
@@ -21,6 +24,9 @@ void usage(){
     std::cout << "-r\tset right border\tdefault: 1" << std::endl;
     std::cout << "-u\tset up border\t\tdefault: 1" << std::endl;
     std::cout << "-q\tquality\t\t\tdefault: 256" << std::endl;
+#ifdef _OPENMP
+    std::cout << "-t\tthread number\t\tdefault: OpenMP choice" << std::endl;
+#endif
 }
 
 void error(){
@@ -73,6 +79,16 @@ int main(int argc, char *argv[]){
                 sscanf(argv[++i], "%u", &quality);
             else
                 error();
+#ifdef _OPENMP
+        } else if (!strcmp(argv[i], "-t")){
+            if (i != argc-1){
+                int threads;
+                sscanf(argv[++i], "%d", &threads);
+                omp_set_num_threads(threads);
+            }
+            else
+                error();
+#endif
         }
     }
 

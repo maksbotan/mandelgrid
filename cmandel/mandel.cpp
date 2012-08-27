@@ -47,13 +47,21 @@ void MandelbrotRenderer::set_pixel(unsigned int x, unsigned int y, mandelbrot_ty
 void MandelbrotRenderer::render(){
     unsigned int strip_size = height/16;
 
-#pragma omp for
+    unsigned int done = 0;
+
+#pragma omp parallel for shared(done)
     for (unsigned int y = 0; y < height; y += strip_size){
         unsigned int y1 = (y + strip_size) < height ? (y + strip_size) : height;
         Worker worker(this, y, y1);
         worker.run();
+#pragma omp critical
+        done += y1 - y;
+#ifdef _OPENMP
+        if (cb != NULL && omp_get_thread_num() == 0)
+#else
         if (cb != NULL)
-            cb(y1, cb_data);
+#endif
+            cb(done, cb_data);
     }
 
     for (unsigned int p = 0; p < width*height - 1; p++)
@@ -62,6 +70,9 @@ void MandelbrotRenderer::render(){
             data[p + 1] = data[p];
             statuses[p + 1] |= Calculated;
         }
+
+    if (cb != NULL)
+        cb(height, cb_data);
 }
 
 inline unsigned int MandelbrotRenderer::point_to_index(unsigned int x, unsigned int y){
