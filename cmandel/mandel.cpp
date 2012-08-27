@@ -125,13 +125,13 @@ void Worker::scan(unsigned int index){
     master->index_to_point(index, &x, &y);
 
     mandelbrot_type center = master->calculate(index, x, y);
-    for (char dx = -1; dx < 2; dx++)
-        for (char dy = -1; dy < 2; dy++){
+    for (char dx = (x == 0 ? 0 : -1); dx < 2; dx++)
+        for (char dy = (y == first_line ? 0 : -1); dy < 2; dy++){
             if (dx == 0 && dy == 0)
                 continue;
             unsigned int new_index = master->point_to_index(x + dx, y + dy);
-            if ( (x + dx >= 0) && (x + dx < master->width) &&
-                 (y + dy >= first_line) && (y + dy < last_line) &&
+            if ( (x + dx < master->width) &&
+                 (y + dy < last_line) &&
                  !(master->has_status(new_index, Queued)) &&
                  (master->calculate(new_index, x + dx, y + dy) != center) )
                     enqueue(new_index);
