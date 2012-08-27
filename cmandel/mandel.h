@@ -11,12 +11,15 @@ typedef enum {
     Calculated
 } PointStatus;
 
+typedef void(*progress_cb)(unsigned int lines, void *data);
+
 class MandelbrotRenderer {
 public:
     MandelbrotRenderer(unsigned int width_, unsigned int height_,
                        double min_x_, double min_y_, double max_x_, double max_y_,
                        mandelbrot_type quality_, mandelbrot_type *data_);
     ~MandelbrotRenderer();
+    void set_progress_cb(progress_cb cb, void *data);
     void render();
     mandelbrot_type get_pixel(unsigned int x, unsigned int y);
     void set_pixel(unsigned int x, unsigned int y, mandelbrot_type value);
@@ -32,6 +35,8 @@ private:
     mandelbrot_type quality;
     mandelbrot_type *data;
     double step_x, step_y;
+    progress_cb cb;
+    void *cb_data;
 };
 
 class Worker {

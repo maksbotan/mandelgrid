@@ -17,7 +17,8 @@ MandelbrotRenderer::MandelbrotRenderer(unsigned int width_, unsigned int height_
     max_x(max_x_),
     max_y(max_y_),
     quality(quality_),
-    data(data_)
+    data(data_),
+    cb(NULL)
 {
     unsigned int size = width * height;
     statuses = new unsigned char[size];
@@ -28,6 +29,11 @@ MandelbrotRenderer::MandelbrotRenderer(unsigned int width_, unsigned int height_
 
 MandelbrotRenderer::~MandelbrotRenderer(){
     delete []statuses;
+}
+
+void MandelbrotRenderer::set_progress_cb(progress_cb cb_, void *data){
+    cb = cb_;
+    cb_data = data;
 }
 
 mandelbrot_type MandelbrotRenderer::get_pixel(unsigned int x, unsigned int y){
@@ -46,6 +52,8 @@ void MandelbrotRenderer::render(){
         unsigned int y1 = (y + strip_size) < height ? (y + strip_size) : height;
         Worker worker(this, y, y1);
         worker.run();
+        if (cb != NULL)
+            cb(y1, cb_data);
     }
 
     for (unsigned int p = 0; p < width*height - 1; p++)
