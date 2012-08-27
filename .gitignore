@@ -4,6 +4,7 @@
 *.o
 *.so
 *_wrap.c
+*.user*
 mandel
 c_mandel.py
 c_mandel_check
