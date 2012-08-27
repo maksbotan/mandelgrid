@@ -27,7 +27,7 @@ void save_png(mandelbrot_type *data, unsigned int width, unsigned int height, ma
 
     for (unsigned int x = 0; x < width; x++)
         for (unsigned int y = 0; y < height; y++){
-            gdImageSetPixel(image, x, y, palette[data[y*width + x]]);
+            gdImageSetPixel(image, x, y, palette[data[(height-y-1)*width + x]]);
         }
 
     gdImagePng(image, file);
