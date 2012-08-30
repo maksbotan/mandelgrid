@@ -4,16 +4,10 @@
 #include "gdinterface.h"
 
 static inline void make_pallete(gdImagePtr image, int *palette, mandelbrot_type quality){
-    double c = 16777216.0/quality;
-    for (mandelbrot_type i = 0; i < quality; i++){
-//        palette[i] = gdImageColorAllocate(image, 128.0 + 127.0 * cos(i/100.0),
-//                                                 128.0 - 127.0 * cos(i/80.0),
-//                                                 128.0 - 127.0 * sin(i/70.0+2.0));
-        int scaled = round(c*i);
-        palette[i] = gdImageColorAllocate(image, (scaled & 0xFF0000) >> 16,
-                                                  (scaled & 0x00FF00) >> 8,
-                                                  (scaled & 0x0000FF));
-    }
+    for (mandelbrot_type i = 0; i < quality; i++)
+        palette[i] = gdImageColorAllocate(image, round(255*(cos(i/15.0)+1)/2),
+                                                 round(255*(cos(i/30.0)+1)/2),
+                                                 round(255*(cos(i/45.0)+1)/2));
     palette[quality] = gdImageColorAllocate(image, 0, 0, 0);
 }
 
