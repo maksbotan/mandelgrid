@@ -45,7 +45,7 @@ void MandelbrotRenderer::set_pixel(unsigned int x, unsigned int y, mandelbrot_ty
 }
 
 void MandelbrotRenderer::render(){
-    unsigned int strip_size = height/16;
+    unsigned int strip_size = ceil(height/16.0);
 
     unsigned int done = 0;
 
@@ -149,7 +149,7 @@ void Worker::scan(unsigned int index){
         }
 }
 mandelbrot_type test_function(double x0, double y0, mandelbrot_type quality){
-    double x, new_x, y;
+    long double x, new_x, y;
     mandelbrot_type iteration;
 
     x = x0;
