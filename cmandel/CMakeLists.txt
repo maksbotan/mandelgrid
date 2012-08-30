@@ -3,14 +3,6 @@ cmake_minimum_required(VERSION 2.6)
 
 project (cmandel)
 
-include (CheckSymbolExists)
-CHECK_SYMBOL_EXISTS (clock "time.h" HAVE_CLOCK)
-
-configure_file (
-    "${PROJECT_SOURCE_DIR}/config.h.in"
-    "${PROJECT_BINARY_DIR}/config.h"
-)
-include_directories ( "${PROJECT_BINARY_DIR}" )
 
 set (LIBRARY_SOURCES mandel.cpp)
 set (MAIN_SOURCES main.cpp)
@@ -58,6 +50,11 @@ if (BUILD_CLI)
     set (MAIN_LIBS ${MAIN_LIBS} gd)
     message (STATUS "Looking for GD - found")
 
+    option (BUILD_NETWORK_MASTER "Build network rendering master node")
+    if (BUILD_NETWORK_MASTER)
+        set (MAIN_SOURCES ${MAIN_SOURCES} server.cpp)
+    endif (BUILD_NETWORK_MASTER)
+
     add_executable (mandelbrot ${MAIN_SOURCES})
     target_link_libraries (mandelbrot ${MAIN_LIBS})
     install (TARGETS mandelbrot DESTINATION bin)
@@ -67,3 +64,18 @@ option (BUILD_GUI "Build Qt-based mandelbrot viewer")
 if (BUILD_GUI)
     add_subdirectory (qbrot)
 endif (BUILD_GUI)
+
+option (BUILD_NETWORK_NODE "Build network rendering worker node")
+if (BUILD_NETWORK_NODE)
+    set (NODE_SOURCES node.cpp)
+    set (NODE_LIBS mandel)
+    add_executable (mandelbrot_node ${NODE_SOURCES})
+    target_link_libraries (mandelbrot_node ${NODE_LIBS})
+    install (TARGETS mandelbrot_node DESTINATION bin)
+endif (BUILD_NETWORK_NODE)
+
+configure_file (
+    "${PROJECT_SOURCE_DIR}/config.h.in"
+    "${PROJECT_BINARY_DIR}/config.h"
+)
+include_directories ( "${PROJECT_BINARY_DIR}" )

@@ -1,4 +1,4 @@
 
 #pragma once
 
-#cmakedefine HAVE_CLOCK
+#cmakedefine BUILD_NETWORK_MASTER
