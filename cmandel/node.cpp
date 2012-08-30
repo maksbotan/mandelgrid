@@ -98,6 +98,6 @@ int main(int argc, char *argv[]){
             sent += send(s, (void*)data + sent, data_len - sent, 0);
         delete []data;
     }
-    std::cout << "Server closed connection";
+    std::cout << "Server closed connection" << std::endl;
     close(s);
 }
