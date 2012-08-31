@@ -74,6 +74,15 @@ if (BUILD_NETWORK_NODE)
     install (TARGETS mandelbrot_node DESTINATION bin)
 endif (BUILD_NETWORK_NODE)
 
+option (BUILD_CLI_ASCII "Build color ascii codes renderer")
+if (BUILD_CLI_ASCII)
+    set (ASCII_SOURCES console.cpp)
+    set (ASCII_LIBS mandel)
+    add_executable (mandelbrot_ascii ${ASCII_SOURCES})
+    target_link_libraries (mandelbrot_ascii ${ASCII_LIBS})
+    install (TARGETS mandelbrot_ascii DESTINATION bin)
+endif (BUILD_CLI_ASCII)
+
 configure_file (
     "${PROJECT_SOURCE_DIR}/config.h.in"
     "${PROJECT_BINARY_DIR}/config.h"
