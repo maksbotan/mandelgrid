@@ -18,7 +18,10 @@ MandelbrotRenderer::MandelbrotRenderer(unsigned int width_, unsigned int height_
     max_y(max_y_),
     quality(quality_),
     data(data_),
-    cb(NULL)
+    cb(NULL),
+    julia(false),
+    cx(0.0),
+    cy(0.0)
 {
     unsigned int size = width * height;
     statuses = new unsigned char[size];
@@ -34,6 +37,12 @@ MandelbrotRenderer::~MandelbrotRenderer(){
 void MandelbrotRenderer::set_progress_cb(progress_cb cb_, void *data){
     cb = cb_;
     cb_data = data;
+}
+
+void MandelbrotRenderer::set_julia_mode(double cx_, double cy_){
+    julia = true;
+    cx = cx_;
+    cy = cy_;
 }
 
 mandelbrot_type MandelbrotRenderer::get_pixel(unsigned int x, unsigned int y){
@@ -87,7 +96,7 @@ inline void MandelbrotRenderer::index_to_point(unsigned int index, unsigned int 
 mandelbrot_type MandelbrotRenderer::calculate(unsigned int index, unsigned int x, unsigned int y){
     if (statuses[index] & Calculated)
         return get_pixel(x, y);
-    mandelbrot_type res = test_function(min_x + x*step_x, min_y + y*step_y, quality);
+    mandelbrot_type res = test_function(min_x + x*step_x, min_y + y*step_y, quality, julia, cx, cy);
     set_pixel(x, y, res);
     statuses[index] |= Calculated;
     return res;
@@ -148,9 +157,14 @@ void Worker::scan(unsigned int index){
                     enqueue(new_index);
         }
 }
-mandelbrot_type test_function(double x0, double y0, mandelbrot_type quality){
+mandelbrot_type test_function(double x0, double y0, mandelbrot_type quality, bool julia, double cx, double cy){
     long double x, new_x, y;
     mandelbrot_type iteration;
+
+    if (!julia) {
+        cx = x0;
+        cy = y0;
+    }
 
     x = x0;
     y = y0;
@@ -173,8 +187,8 @@ mandelbrot_type test_function(double x0, double y0, mandelbrot_type quality){
     */
 
     while ((x*x + y*y <= 4) && (iteration < quality)) {
-        new_x = x*x - y*y + x0;
-        y = 2*x*y + y0;
+        new_x = x*x - y*y + cx;
+        y = 2*x*y + cy;
         x = new_x;
 
         iteration++;

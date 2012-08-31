@@ -18,6 +18,9 @@
 
 void usage(){
     std::cout << "Command-line mandelbrot set renderer. Available options:" << std::endl;
+    std::cout << "-j\tenable julia mode (must be _first_ argument)" << std::endl;
+    std::cout << "-cx\tjulia set C.x\t\tdefault: 0" << std::endl;
+    std::cout << "-cy\tjulia set C.y\t\tdefault: 1" << std::endl;
     std::cout << "-w\tpicture width\t\tdefault: 1200" << std::endl;
     std::cout << "-h\tpicture height\t\tdefault: 800" << std::endl;
     std::cout << "-l\tset left border\t\tdefault: -2" << std::endl;
@@ -44,6 +47,8 @@ int main(int argc, char *argv[]){
     unsigned int width = 1200, height = 800;
     double left = -2.0, down = -1.0, right = 1.0, up = 1.0;
     mandelbrot_type quality = 256;
+    bool julia = false;
+    double cx = 0.0, cy = 1.0;
 #ifdef BUILD_NETWORK_MASTER
     bool master = false;
     int port = 1573;
@@ -53,6 +58,22 @@ int main(int argc, char *argv[]){
         if (!strcmp(argv[i], "--help")){
             usage();
             exit(EXIT_SUCCESS);
+        } else if (!strcmp(argv[i], "-j")){
+            julia = true;
+            down = -2.0;
+            right = 2.0;
+            up = 2.0;
+            width = 800;
+        } else if (!strcmp(argv[i], "-cx")){
+            if (i != argc-1)
+                sscanf(argv[++i], "%lf", &cx);
+            else
+                error();
+        } else if (!strcmp(argv[i], "-cy")){
+            if (i != argc-1)
+                sscanf(argv[++i], "%lf", &cy);
+            else
+                error();
         } else if (!strcmp(argv[i], "-w")){
             if (i != argc-1)
                 sscanf(argv[++i], "%u", &width);
@@ -138,6 +159,8 @@ int main(int argc, char *argv[]){
             quality,
             data
         );
+        if (julia)
+            renderer.set_julia_mode(cx, cy);
 
         clock_t time_start = clock();
         renderer.render();
