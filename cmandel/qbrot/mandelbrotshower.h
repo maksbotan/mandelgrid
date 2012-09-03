@@ -2,6 +2,7 @@
 #define MANDELBROTSHOWER_H
 
 #include <cmath>
+#include <ctime>
 #include <QWidget>
 #include <QPainter>
 #include <QMouseEvent>
@@ -29,12 +30,15 @@ private:
     qreal xmin, ymax;
     qreal xres, yres;
     QProgressBar *pb;
+    bool julia;
     void build_palette();
 signals:
     void region_selected(QRectF region, QSize new_size);
+    void julia_point(QPointF point);
     void update_current_pos(QPointF pos);
+    void rendering_complete(double t_render);
 public slots:
-    void render_set(QSize set_size, QRectF set_rect, mandelbrot_type quality);
+    void render_set(QSize set_size, QRectF set_rect, mandelbrot_type quality, bool julia, double cx, double cy);
     void save(QString file_name);
     void set_lock_proportions(bool lock);
 protected:

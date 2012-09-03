@@ -5,7 +5,8 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
     X("X: "),
-    Y("Y: ")
+    Y("Y: "),
+    julia(false)
 {
     ui->setupUi(this);
     ui->width->setValidator(new QIntValidator());
@@ -17,10 +18,17 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->quality->setValidator(new QIntValidator());
     ui->magnification->setValidator(new QDoubleValidator());
     ui->threads->setValidator(new QIntValidator());
+    ui->cx->setValidator(new QDoubleValidator());
+    ui->cy->setValidator(new QDoubleValidator());
 #ifndef _OPENMP
     ui->threads->hide();
     ui->threadsLabel->hide();
 #endif
+
+    ui->juliaCRealLabel->hide();
+    ui->cx->hide();
+    ui->juliaCImagLabel->hide();
+    ui->cy->hide();
 
     ui->statusBar->addWidget(&X);
     ui->statusBar->addWidget(&Y);
@@ -30,6 +38,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->horizontalLayout_2->insertWidget(0, shower);
     connect(shower, SIGNAL(region_selected(QRectF, QSize)), this, SLOT(new_region(QRectF, QSize)));
     connect(shower, SIGNAL(update_current_pos(QPointF)), this, SLOT(update_pos(QPointF)));
+    connect(shower, SIGNAL(julia_point(QPointF)), this, SLOT(julia_point(QPointF)));
+    connect(shower, SIGNAL(rendering_complete(double)), this, SLOT(show_stats(double)));
     connect(ui->checkBox, SIGNAL(toggled(bool)), shower, SLOT(set_lock_proportions(bool)));
     render_set();
 }
@@ -50,7 +60,7 @@ void MainWindow::render_set(){
     set_rect.setTop(ui->up->text().toDouble());
     set_rect.setBottom(ui->down->text().toDouble());
 
-    shower->render_set(set_size, set_rect, ui->quality->text().toInt());
+    shower->render_set(set_size, set_rect, ui->quality->text().toInt(), julia, ui->cx->text().toDouble(), ui->cy->text().toDouble());
 }
 
 void MainWindow::save(){
@@ -73,7 +83,10 @@ void MainWindow::new_region(QRectF region, QSize new_size){
 }
 
 void MainWindow::reset_defaults(){
-    new_region(QRectF(QPointF(-2, 1), QPointF(1, -1)), QSize());
+    if (julia)
+        new_region(QRectF(QPointF(-2, 2), QPointF(2, -2)), QSize());
+    else
+        new_region(QRectF(QPointF(-2, 1), QPointF(1, -1)), QSize());
 }
 
 void MainWindow::update_pos(QPointF pos){
@@ -95,4 +108,37 @@ void MainWindow::set_num_threads(QString text){
 #else
     Q_UNUSED(text)
 #endif
+}
+
+void MainWindow::switch_mode(QString mode){
+    if (mode == "Mandelbrot"){
+        ui->juliaCRealLabel->hide();
+        ui->cx->hide();
+        ui->juliaCImagLabel->hide();
+        ui->cy->hide();
+        ui->width->setText("600");
+        ui->height->setText("400");
+        julia = false;
+        reset_defaults();
+    } else {
+        ui->juliaCRealLabel->show();
+        ui->cx->show();
+        ui->juliaCImagLabel->show();
+        ui->cy->show();
+        ui->width->setText("600");
+        ui->height->setText("600");
+        julia = true;
+        reset_defaults();
+    }
+}
+
+void MainWindow::julia_point(QPointF point){
+    if (!julia)
+        return;
+    ui->cx->setText(QString::number(point.x()));
+    ui->cy->setText(QString::number(point.y()));
+}
+
+void MainWindow::show_stats(double t_render){
+    ui->stats->setText(QString("Rendered in %1 seconds").arg(t_render));
 }

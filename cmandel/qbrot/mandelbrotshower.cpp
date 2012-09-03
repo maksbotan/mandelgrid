@@ -7,7 +7,8 @@ MandelbrotShower::MandelbrotShower(QProgressBar *pb_, QWidget *parent) :
     palette(new QRgb[1]),
     moving(false),
     lock_proportions(true),
-    pb(pb_)
+    pb(pb_),
+    julia(false)
 {
     setMouseTracking(true);
 }
@@ -27,7 +28,7 @@ void MandelbrotShower::build_palette(){
     palette[quality] = qRgb(0, 0, 0);
 }
 
-void MandelbrotShower::render_set(QSize set_size, QRectF set_rect, mandelbrot_type quality_){
+void MandelbrotShower::render_set(QSize set_size, QRectF set_rect, mandelbrot_type quality_, bool julia, double cx, double cy){
     if (size != set_size){
         if (image != NULL)
             delete image;
@@ -57,8 +58,15 @@ void MandelbrotShower::render_set(QSize set_size, QRectF set_rect, mandelbrot_ty
                                 set_rect.top(),
                                 quality,
                                 data);
+    if (julia)
+        renderer.set_julia_mode(cx, cy);
+    this->julia = julia;
     renderer.set_progress_cb((progress_cb)&report_progress, (void*) pb);
+    clock_t start = clock();
     renderer.render();
+    clock_t stop = clock();
+    double t_render = (double)(stop - start) / CLOCKS_PER_SEC;
+
     for (int y = 0; y < set_size.height(); y++){
         QRgb *line = (QRgb*)(image->scanLine(y));
         unsigned int offset = (set_size.height()-y-1)*set_size.width();
@@ -68,6 +76,8 @@ void MandelbrotShower::render_set(QSize set_size, QRectF set_rect, mandelbrot_ty
     delete []data;
 
     update();
+
+    emit rendering_complete(t_render);
 }
 
 void MandelbrotShower::paintEvent(QPaintEvent *){
@@ -92,9 +102,11 @@ void MandelbrotShower::mousePressEvent(QMouseEvent *e){
     update();
 }
 
-void MandelbrotShower::mouseReleaseEvent(QMouseEvent *){
+void MandelbrotShower::mouseReleaseEvent(QMouseEvent *e){
     moving = false;
     update();
+
+    move_now = e->pos();
 
     QPointF start(xmin + move_start.x()*xres, ymax - move_start.y()*yres);
     QPointF stop(xmin + move_now.x()*xres, ymax - move_now.y()*yres);
@@ -109,7 +121,10 @@ void MandelbrotShower::mouseReleaseEvent(QMouseEvent *){
             new_size.setWidth(size.height()*fabs(new_rect.width()/new_rect.height()));
     }
 
-    emit region_selected(new_rect, new_size);
+    if (!new_rect.isNull())
+        emit region_selected(new_rect, new_size);
+    else if (!julia)
+        emit julia_point(stop);
 }
 
 void MandelbrotShower::mouseMoveEvent(QMouseEvent *e){
