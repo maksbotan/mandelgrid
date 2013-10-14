@@ -136,6 +136,7 @@ int main(int argc, char *argv[]){
     mandelbrot_type *data = new mandelbrot_type[size];
     std::fill(data, data + size, '\0');
 
+#ifdef BUILD_NETWORK_MASTER
     if (master){
         try {
             MandelbrotServer server(
@@ -152,7 +153,9 @@ int main(int argc, char *argv[]){
             exit(EXIT_FAILURE);
         }
     }
-    else {
+    else
+#endif
+    {
         MandelbrotRenderer renderer(
             width, height,
             left, down, right, up,
